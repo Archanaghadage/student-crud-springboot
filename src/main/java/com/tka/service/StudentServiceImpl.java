@@ -1,13 +1,13 @@
 package com.tka.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tka.Entity.StudentEntity;
 import com.tka.repository.StudentRepository;
-import com.tka.service.StudentService;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -20,10 +20,11 @@ public class StudentServiceImpl implements StudentService {
 		return studentRepository.findAll();
 	}
 
-	@Override
-	public StudentEntity getStudentById(Long id) {
-		return studentRepository.findById(id).orElse(null);
-	}
+	 @Override
+	    public StudentEntity getStudentById(Long id) {
+	        Optional<StudentEntity> student = studentRepository.findById(id);
+	        return student.orElse(null);   
+	    }
 
 	@Override
 	public StudentEntity addStudent(StudentEntity student) {
@@ -33,21 +34,25 @@ public class StudentServiceImpl implements StudentService {
 	@Override
 	public StudentEntity updateStudent(Long id, StudentEntity student) {
 
-		StudentEntity existing = studentRepository.findById(id).orElse(null);
+        Optional<StudentEntity> existingOpt = studentRepository.findById(id);
 
-		if (existing != null) {
-			existing.setName(student.getName());
-			existing.setEmail(student.getEmail());
-			existing.setCourse(student.getCourse());
-			existing.setAge(student.getAge());
-			return studentRepository.save(existing);
-		}
+        if (existingOpt.isPresent()) {
+            StudentEntity existing = existingOpt.get();
+            existing.setName(student.getName());
+            existing.setEmail(student.getEmail());
+            existing.setCourse(student.getCourse());
+            existing.setAge(student.getAge());
 
-		return null;
-	}
+            return studentRepository.save(existing);
+        }
 
-	@Override
-	public void deleteStudent(Long id) {
-		studentRepository.deleteById(id);
-	}
+        return null;
+    }
+
+	  @Override
+	    public void deleteStudent(Long id) {
+	        if (studentRepository.existsById(id)) {
+	            studentRepository.deleteById(id);
+	        }
+	    }
 }
